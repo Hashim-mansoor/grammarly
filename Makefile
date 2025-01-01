@@ -1,29 +1,33 @@
-SHELL := /usr/bin/env bash
-
 EMACS ?= emacs
-CASK ?= cask
+EASK ?= eask
 
-PKG-FILES := grammarly.el
+.PHONY: clean checkdoc lint package install compile test
 
-TEST-FILES := $(shell ls test/grammarly-*.el)
+ci: clean package install compile
 
-.PHONY: clean checkdoc lint unix-build unix-compile	unix-test
+package:
+	@echo "Packaging..."
+	$(EASK) package
 
-unix-ci: clean unix-build unix-compile
+install:
+	@echo "Installing..."
+	$(EASK) install
 
-unix-build:
-	$(CASK) install
-
-unix-compile:
+compile:
 	@echo "Compiling..."
-	@$(CASK) $(EMACS) -Q --batch \
-		-L . \
-		--eval '(setq byte-compile-error-on-warn t)' \
-		-f batch-byte-compile $(PKG-FILES)
+	$(EASK) compile
 
-unix-test:
+test:
 	@echo "Testing..."
-	$(CASK) exec ert-runner -L . $(LOAD-TEST-FILES) -t '!no-win' -t '!org'
+	$(EASK) test ert ./test/*.el
+
+checkdoc:
+	@echo "Run checkdoc..."
+	$(EASK) lint checkdoc
+
+lint:
+	@echo "Run package-lint..."
+	$(EASK) lint package
 
 clean:
-	rm -rf .cask *.elc
+	$(EASK) clean all

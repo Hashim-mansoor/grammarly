@@ -1,14 +1,13 @@
 ;;; grammarly.el --- Grammarly API interface  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2019  Shen, Jen-Chieh
+;; Copyright (C) 2019-2025  Shen, Jen-Chieh
 ;; Created date 2019-11-06 20:41:48
 
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
-;; Description: Grammarly API interface.
-;; Keyword: grammar api interface english
-;; Version: 0.3.0
-;; Package-Requires: ((emacs "24.4") (s "1.12.0") (request "0.3.0") (websocket "1.6"))
 ;; URL: https://github.com/emacs-grammarly/grammarly
+;; Version: 0.3.0
+;; Package-Requires: ((emacs "26.1") (s "1.12.0") (request "0.3.0") (websocket "1.6"))
+;; Keywords: convenience grammar api interface english
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -155,6 +154,20 @@
    ((functionp lst) (apply lst args))
    ((listp lst) (dolist (fnc lst) (apply fnc args)))
    (t (user-error "[ERROR] Function does not exists: %s" lst))))
+
+(defun grammarly-load-from-authinfo (&optional username)
+  "Load Grammarly authentication info from auth-source.
+
+Optionally pass the USERNAME, otherwise, it will be searched in the authinfo
+file.  You will need to add a line in your authinfo file \"machine grammarly.com
+login <YOUR-EMAIL> pass <YOUR-PASSWORD>\"."
+  (require 'auth-source)
+  (when-let* ((user-info (car (auth-source-search :host "grammarly.com" :user username)))
+              (user (or username (plist-get user-info :user)))
+              (secret (plist-get user-info :secret)))
+    (setq grammarly-username user
+          grammarly-password (funcall secret))
+    t))
 
 ;;
 ;; (@* "Cookie" )
